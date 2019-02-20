@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>EBPA Census Block Profiler</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- JAVASCRIPT LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.js'></script>
+    <script src="./script.js" defer></script>
+  </head>
+  <body class="deep-purple darken-3">
+    <nav class="deep-purple darken-4 z-depth-5">
+      <a href="#" class="brand-logo">EBPA Census Block Profiler</a>
+    </nav>
+    <div class="row flex">
+      <!-- Map Element -->
+      <div class="col s12 m8" id="map"></div>
+      <!-- Sidebar -->
+      <div class="col s12 m4 grey darken-3" id="info-pane"></div>
+    </div>
+  </body>
+</html>

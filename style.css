@@ -1,0 +1,27 @@
+body {
+  overflow: hidden;
+}
+
+.flex {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  height: calc(100vh - 68px);
+}
+
+#map {
+  height: 100%;,
+  margin: 0;
+  padding: 0;
+}
+
+#info-pane {
+  height: 100%;
+  overflow: auto
+}
+
+@media screen and (max-width: 600px) {
+  #map {
+    height: 66.67%;
+  }
+}
