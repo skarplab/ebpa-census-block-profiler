@@ -12,10 +12,18 @@
     <link rel="stylesheet" href="./style.css">
 
     <!-- JAVASCRIPT LIBRARIES -->
+    <!-- frontend -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.0/handlebars.min.js"></script>
+    <!-- data -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alasql@0.4"></script>
+    <!-- geo -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
     <script src='https://npmcdn.com/@turf/turf/turf.js'></script>
+    <script src='./js/martinez.min.js'></script>
+    <!-- custom -->
     <script src="./script.js" defer></script>
   </head>
   <body class="deep-purple darken-3">
@@ -24,9 +32,54 @@
     </nav>
     <div class="row flex">
       <!-- Map Element -->
-      <div class="col s12 m8" id="map"></div>
+      <div class="col s12 m5" id="map"></div>
       <!-- Sidebar -->
-      <div class="col s12 m4 grey darken-3" id="info-pane"></div>
+      <div class="col s12 m7 grey darken-3" id="info-pane">
+        <div class="col s12 m12 l12" id="initial-info-pane-content">
+          <h2 class="white-text">Welcome to the EBPA Census Block Profiler!</h2>
+          <p class="white-text">This tool is meant to provide quick information about Raleigh's Census Blocks, particularly as they relate to PRCR's Experience-Based Park Access Model.</p>
+          <div class="row">
+            <div class="col s12 m6">
+              <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                  <span class="card-title">Explore</span>
+                  <p>Use maps and statistics to get a better understanding of the characteristics of the Census Block</p>
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m6">
+              <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                  <span class="card-title">Learn</span>
+                  <p>Each area of a Raleigh has its own unique park needs. Some are well-served by the parks system while others could benefit from improved service.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <script id="info-pane-template" type="text/x-handlebars-template">
+      <div class="col s12 m12 l12" id="info-pane-content">
+        <h2 class="white-text">{{censusBlockId}}</h2>
+      </div>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card blue-grey darken-1">
+            <div class="card-content white-text">
+              <span class="card-title">Current LOS: {{los}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card blue-grey darken-1">
+            <div class="card-content white-text">
+              <span class="card-title">LA LOS: {{lalos}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
   </body>
 </html>
