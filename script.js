@@ -1,3 +1,5 @@
+const WALKSCORE_KEY = "9a519f604b6775c5c4dfbde19d64fd75"
+
 let source = document.getElementById('info-pane-template').innerHTML;
 let template = Handlebars.compile(source);
 
@@ -100,6 +102,7 @@ Promise.all([
 					map.getSource('test-source').setData(res)
 				})
 
+			getWalkScore(selectedCensusBlockPOSCoordinates[1], selectedCensusBlockPOSCoordinates[0], WALKSCORE_KEY)
 			// UPDATE INFO PANE
 			// Remove initial info pane info if it's there
 			removeElementById('initial-info-pane-content')
@@ -127,4 +130,14 @@ function losScoreToGrade(score) {
 				 score >  4  ? 'D' :
 				 score == 4  ? 'F' :
 											 '-';
+}
+
+// TODO: Gotta figure out how to work with this http resource
+function getWalkScore(lat, lng, api_key) {
+	let url = `http://api.walkscore.com/score?format=json&lat=${lat}&lon=${lng}&transit=1&bike=1&wsapikey=${api_key}`
+	console.log(url)
+	return d3.json(url, {
+		crossOrigin: "anonymous",
+		mode: 'no-cors'
+	})
 }
