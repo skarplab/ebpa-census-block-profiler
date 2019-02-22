@@ -27,18 +27,14 @@ Promise.all([
 
 		map.addLayer({
 			"id": "test-layer",
-			"type": "line",
+			"type": "fill",
 			"source": 'test-source',
-			"layout": {
-				"line-cap": "round",
-				"line-join": "round"
-			},
+			"layout": {},
 			"paint": {
-				"line-color": "black",
-				"line-width": 1,
-				"line-dasharray": [2, 2]
+				"fill-color": "#5E35B1",
+				"fill-opacity": 0.35
 			}
-		}, 'road-label-small')
+		}, 'building')
 
 		map.addSource("cb-source", {
 			"type": 'vector',
@@ -72,7 +68,7 @@ Promise.all([
 			"source": "cb-selected-source",
 			"layout": {},
 			"paint": {
-				"fill-color": "#5E35B1",
+				"fill-color": "green",
 				"fill-opacity": 0.35
 			}
 		}, 'building')
@@ -80,52 +76,43 @@ Promise.all([
 
 
 		map.on('click', 'cb-fill-layer', (e) => {
-			// Remove initial info pane info if it's there
-			if (document.getElementById('initial-info-pane-content')) {
-				document.getElementById('initial-info-pane-content').remove()
-			}
 
 			let selectedCensusBlockFC = turf.featureCollection([e.features[0]])
-			let selectedCensusBlockPOS = turf.pointOnFeature(selectedCensusBlockFC)
-			let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1)
 			let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
+			
+			
+			// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK
+			// let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1)
+			// let intersectPolygonsFeatureCollection = intersectingPolygons(selectedCensusBlockBuffer, censusBlockData)
+			// map.getSource('cb-selected-source').setData(intersectPolygonsFeatureCollection)
+			
+			// UPDATE SELECTED CENSUS BLOCK
+			map.getSource('cb-selected-source').setData(selectedCensusBlockFC)
+			
+			// UPDATE 10-MINUTE WALK ISOCHRONE
+			// Get a point on surface of selected Census Block
+			let selectedCensusBlockPOS = turf.pointOnFeature(selectedCensusBlockFC)
+			// Get the coordinates of the point on surface
+			let selectedCensusBlockPOSCoordinates = turf.getCoord(selectedCensusBlockPOS)
+			// Request isochrone from Mapbox Directions API. When it is returned, set data on appropriate sources. 
+			mapbox10MinuteWalkIsochrone(selectedCensusBlockPOSCoordinates, mapboxgl.accessToken)
+				.then((res) => {
+					map.getSource('test-source').setData(res)
+				})
 
-			let context = {
+			// UPDATE INFO PANE
+			// Remove initial info pane info if it's there
+			removeElementById('initial-info-pane-content')
+			// Update elements of the info pane
+			updateHandlebarElement('info-pane', template, {
 				censusBlockId: selectedCensusBlockInfo.geoid10,
 				los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
 				lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score))
-			}
-			let html = template(context);
-			document.getElementById('info-pane').innerHTML = html
-
-
-			let intersectPolygons = [];
-			turf.featureEach(censusBlockData, (block) => {
-				if (block.properties){
-					let blockProperties = [block.properties];
-					let intersection = martinez.intersection(selectedCensusBlockBuffer.features[0].geometry.coordinates, block.geometry.coordinates)
-
-					if (intersection) {
-						if (intersection.length > 0) {
-							let join = alasql('SELECT * FROM ? blockProperties LEFT JOIN ? analysisData ON blockProperties.geoid10 = analysisData.geoid10', [blockProperties, analysisData])
-							intersectPolygons.push(turf.multiPolygon(intersection, {
-								"geoid10": block.properties.geoid10,
-								"totpop_2018": parseInt(join[0].totpop_2018)
-							}))
-						}
-					}
-				}
-			});
-			// Intersecting Census Blocks data
-			let intersectPolygonsFeatureCollection = turf.featureCollection(intersectPolygons)
-
-			// Update selected Census Bloc
-			map.getSource('cb-selected-source').setData(selectedCensusBlockFC)
-			// Update 10-minute Walk Isochrone
-			draw10MinuteWalkIsochrone(turf.getCoord(selectedCensusBlockPOS), mapboxgl.accessToken, map, 'test-source')
+			})
 		})
 	})
 })
+
 
 function clickedFeatureInfo(selectedFeature, selectedFeatureId, joinTable, joinTableId) {
 	let selectedFeatureArray = [selectedFeature.features[0].properties]
@@ -140,11 +127,4 @@ function losScoreToGrade(score) {
 				 score >  4  ? 'D' :
 				 score == 4  ? 'F' :
 											 '-';
-}
-
-function draw10MinuteWalkIsochrone(xy, token, map, mbsource) {
-	Promise.all([d3.json(`https://api.mapbox.com/isochrone/v1/mapbox/walking/${xy[0]},${xy[1]}?contours_minutes=10&polygons=true&access_token=${token}`)])
-		.then(([isochroneData]) => {
-			map.getSource(mbsource).setData(isochroneData)
-		})
 }
