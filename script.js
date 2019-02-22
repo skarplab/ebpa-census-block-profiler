@@ -8,7 +8,7 @@ mapboxgl.accessToken = "pk.eyJ1IjoicHJjcmRldmxhYiIsImEiOiJjamljNWE0Z2owMGJjM2tzM
 
 let map = new mapboxgl.Map({
 	container: 'map',
-	style: 'mapbox://styles/mapbox/streets-v9',
+	style: 'mapbox://styles/prcrdevlab/cjsfao9os15fc1fmuot5nthgs',
 	center: [-78.638176, 35.779591],
 	zoom: 13
 });
@@ -29,12 +29,16 @@ Promise.all([
 			"id": "test-layer",
 			"type": "line",
 			"source": 'test-source',
-			"layout": {},
+			"layout": {
+				"line-cap": "round",
+				"line-join": "round"
+			},
 			"paint": {
-				"line-color": "red",
-				"line-width": 2
+				"line-color": "black",
+				"line-width": 1,
+				"line-dasharray": [2, 2]
 			}
-		})
+		}, 'road-label-small')
 
 		map.addSource("cb-source", {
 			"type": 'vector',
@@ -68,10 +72,10 @@ Promise.all([
 			"source": "cb-selected-source",
 			"layout": {},
 			"paint": {
-				"fill-color": "#abc123",
-				"fill-opacity": 0.65
+				"fill-color": "#5E35B1",
+				"fill-opacity": 0.35
 			}
-		})
+		}, 'building')
 
 
 
