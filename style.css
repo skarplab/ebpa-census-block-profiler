@@ -20,6 +20,11 @@ body {
   overflow: auto
 }
 
+.info-pane-map {
+  width: 100%;
+  height: 250px;
+}
+
 @media screen and (max-width: 600px) {
   #map {
     height: 66.67%;

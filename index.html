@@ -8,6 +8,9 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin=""/>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="./style.css">
 
@@ -20,6 +23,12 @@
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alasql@0.4"></script>
     <!-- geo -->
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+    <script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
+    integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
+    crossorigin=""></script>
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
     <script src='https://npmcdn.com/@turf/turf/turf.js'></script>
     <script src='./js/martinez.min.js'></script>
@@ -29,6 +38,7 @@
     <script src="./js/intersectingPolygons.js"></script>
     <script src="./js/containingPolygonProperties.js"></script>
     <script src="./js/mapbox10MinuteWalkIsochrone.js"></script>
+    <script src="./js/infoPaneMap.js"></script>
     <script src="./script.js" defer></script>
   </head>
   <body class="deep-purple darken-3">
@@ -109,6 +119,20 @@
               <p>{{council}}</p>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <b class="white-text">Zoning</b>
+          <div id="zoning-map" class="info-pane-map"></div>
+        </div>
+        <div class="col s12">
+          <b class="white-text">Future Land Use</b>
+          <div id="flu-map" class="info-pane-map"></div>
+        </div>
+        <div class="col s12">
+          <b class="white-text">Flood Plain</b>
+          <div id="flood-map" class="info-pane-map"></div>
         </div>
       </div>
     </script>

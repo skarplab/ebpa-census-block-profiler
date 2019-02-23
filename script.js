@@ -26,7 +26,6 @@ Promise.all([
 	d3.json(COUNCIL_DISTRICTS_URL)
 ]).then(([censusBlockData, analysisData, cacData, subdivisionsData, councilDistrictsData]) => {
 
-	// map.on('load', () => {
 	if (map.loaded()) {
 		///////////////////////////////////
 		// CENSUS BLOCKS W/ EBPA SCORES //
@@ -150,19 +149,42 @@ Promise.all([
 				"line-width": 2
 			}
 		}, 'road-label-small')
+
+		//////////////
+		// BUFFFER //
+		////////////
+		map.addSource("buffer-source", {
+			"type": 'geojson',
+			"data": turf.featureCollection([])
+		})
+
+		map.addLayer({
+			"id": "buffer-line-layer",
+			"type": "line",
+			"source": "buffer-source",
+			"layout": {},
+			"paint": {
+				"line-color": "#121212",
+				"line-width": 2,
+				"line-dasharray": [4, 4]
+			}
+		})
+
 	}
 
-
 	map.on('click', 'cb-fill-layer', (e) => {
-
+		updateApp(e)
+	})
+	// TODO: Use URL hash to open map with a particular Census Block already selected
+	function updateApp(e) {
 		let selectedCensusBlockFC = turf.featureCollection([e.features[0]])
 		let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
 
 
 		// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK
-		// let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1)
+		let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1, {units: "miles"})
 		// let intersectPolygonsFeatureCollection = intersectingPolygons(selectedCensusBlockBuffer, censusBlockData)
-		// map.getSource('cb-selected-source').setData(intersectPolygonsFeatureCollection)
+		map.getSource('buffer-source').setData(selectedCensusBlockBuffer)
 
 		// UPDATE SELECTED CENSUS BLOCK
 		map.getSource('cb-selected-source').setData(selectedCensusBlockFC)
@@ -205,8 +227,19 @@ Promise.all([
 			},
 			council: `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
 		})
-	})
+
+		// ADD MAPS TO INFO PANE
+		// Zoning
+		infoPaneEsriThematicMap('zoning-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/Zoning/MapServer', [0], 0.4)
+		// Future Land Use
+		infoPaneEsriThematicMap('flu-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/FutureLandUse/MapServer', [0], 0.4)
+		// Flood Plain
+		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'http://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
+	}
 })
+
+
+
 
 function clickedFeatureInfo(selectedFeature, selectedFeatureId, joinTable, joinTableId) {
 	let selectedFeatureArray = [selectedFeature.features[0].properties]
