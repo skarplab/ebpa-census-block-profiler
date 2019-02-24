@@ -196,9 +196,12 @@ Promise.all([
 		let selectedCensusBlockPOSCoordinates = turf.getCoord(selectedCensusBlockPOS)
 		// Request isochrone from Mapbox Directions API. When it is returned, set data on appropriate sources.
 		mapbox10MinuteWalkIsochrone(selectedCensusBlockPOSCoordinates, mapboxgl.accessToken)
-		.then((res) => {
-			map.getSource('isochrone-source').setData(res)
-		})
+			.then((res) => {
+				map.getSource('isochrone-source').setData(res)
+				map.fitBounds(turf.bbox(res), {
+					padding: 10
+				})
+			})
 
 		// FIND CAC
 		let cac = containingPolygonProperties(selectedCensusBlockPOS, cacData)
@@ -217,15 +220,27 @@ Promise.all([
 			censusBlockId: selectedCensusBlockInfo.geoid10,
 			los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
 			lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score)),
-			cac: cac.NAME,
+			cac: () => {
+				if(!cac) {
+					return "-"
+				} else {
+					return cac.NAME
+				}
+			},
 			subdivision: () => {
 				if (!subdivision) {
-					return ""
+					return "-"
 				} else {
 					return subdivision.NAME;
 				}
 			},
-			council: `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
+			council: () => {
+				if (!council) {
+					return "-"
+				} else {
+					return `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
+				}
+			}
 		})
 
 		// ADD MAPS TO INFO PANE
@@ -233,6 +248,8 @@ Promise.all([
 		infoPaneEsriThematicMap('zoning-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/Zoning/MapServer', [0], 0.4)
 		// Future Land Use
 		infoPaneEsriThematicMap('flu-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/FutureLandUse/MapServer', [0], 0.4)
+		// Greenway
+		infoPaneEsriThematicMap('greenway-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Parks/Greenway/MapServer', [0,1,3], 0.4)
 		// Flood Plain
 		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'http://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
 	}
