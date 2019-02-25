@@ -303,7 +303,7 @@ Promise.all([
 		// Greenway
 		infoPaneEsriThematicMap('greenway-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Parks/Greenway/MapServer', [0,1,3], 0.4)
 		// Flood Plain
-		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'http://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
+		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'https://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
 
 
 
