@@ -110,16 +110,26 @@ Promise.all([
 			"data": turf.featureCollection([])
 		})
 
+		// map.addLayer({
+		// 	"id": "cb-selected-fill-layer",
+		// 	"type": "fill",
+		// 	"source": "cb-selected-source",
+		// 	"layout": {},
+		// 	"paint": {
+		// 		"fill-color": "green",
+		// 		"fill-opacity": 0.35
+		// 	}
+		// }, 'building')
 		map.addLayer({
-			"id": "cb-selected-fill-layer",
-			"type": "fill",
+			"id": "cb-selected-line-layer",
+			"type": "line",
 			"source": "cb-selected-source",
 			"layout": {},
 			"paint": {
-				"fill-color": "green",
-				"fill-opacity": 0.35
+				"line-color": "#1eded2",
+				"line-width": 2
 			}
-		}, 'building')
+		})
 
 		////////////////
 		// ISOCHRONE //
@@ -129,24 +139,25 @@ Promise.all([
 			"data": turf.featureCollection([])
 		})
 
-		map.addLayer({
-			"id": "isochrone-fill-layer",
-			"type": "fill",
-			"source": 'isochrone-source',
-			"layout": {},
-			"paint": {
-				"fill-color": "#5E35B1",
-				"fill-opacity": 0.35
-			}
-		}, 'building')
+		// map.addLayer({
+		// 	"id": "isochrone-fill-layer",
+		// 	"type": "fill",
+		// 	"source": 'isochrone-source',
+		// 	"layout": {},
+		// 	"paint": {
+		// 		"fill-color": "#5E35B1",
+		// 		"fill-opacity": 0.35
+		// 	}
+		// }, 'building')
 		map.addLayer({
 			"id": "isochrone-line-layer",
 			"type": "line",
 			"source": 'isochrone-source',
 			"layout": {},
 			"paint": {
-				"line-color": "#5E35B1",
-				"line-width": 2
+				"line-color": "#121212",
+				"line-width": 1,
+				"line-dasharray": [2, 2]
 			}
 		}, 'road-label-small')
 
@@ -158,17 +169,42 @@ Promise.all([
 			"data": turf.featureCollection([])
 		})
 
+		// map.addLayer({
+		// 	"id": "buffer-line-layer",
+		// 	"type": "line",
+		// 	"source": "buffer-source",
+		// 	"layout": {},
+		// 	"paint": {
+		// 		"line-color": "#121212",
+		// 		"line-width": 2,
+		// 		"line-dasharray": [4, 4]
+		// 	}
+		// })
+
+		map.addSource("nearby-census-blocks-source", {
+			"type": 'geojson',
+			"data": turf.featureCollection([])
+		})
+
 		map.addLayer({
-			"id": "buffer-line-layer",
-			"type": "line",
-			"source": "buffer-source",
+			"id": "nearby-census-blocks-fill-layer",
+			"type": "fill",
+			"source": "nearby-census-blocks-source",
 			"layout": {},
 			"paint": {
-				"line-color": "#121212",
-				"line-width": 2,
-				"line-dasharray": [4, 4]
+				"fill-color": [
+					'match',
+					['get', 'grade'],
+					'A', '#1a9641',
+					'B', '#a6d96a',
+					'C',  '#ffffbf',
+					'D',  '#fdae61',
+					'F', '#d7191c',
+							'#121212'
+				],
+				"fill-opacity": 0.5
 			}
-		})
+		}, 'waterway-river-canal')
 
 	}
 
@@ -181,10 +217,26 @@ Promise.all([
 		let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
 
 
-		// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK
+		// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK. This works but needs to be cleaned up. Some functions probably need to be refactored to make this work well.
 		let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1, {units: "miles"})
-		// let intersectPolygonsFeatureCollection = intersectingPolygons(selectedCensusBlockBuffer, censusBlockData)
 		map.getSource('buffer-source').setData(selectedCensusBlockBuffer)
+		map.fitBounds(turf.bbox(selectedCensusBlockBuffer), {
+			padding: 10
+		})
+
+		let intersectPolygonsFeatureCollection = intersectingPolygons(selectedCensusBlockBuffer, censusBlockData)
+		let intersectingPolygonInfos = []
+		turf.featureEach(intersectPolygonsFeatureCollection, (f) => {
+			// console.log(clickedFeatureInfo(f, 'geoid10', analysisData, 'geoid10'))
+			let fProperties = [f.properties];
+
+			let fEnrichedFeature = turf.feature(f.geometry,
+				alasql(`SELECT * FROM ? fProperties JOIN ? analysisData ON fProperties.geoid10 = analysisData.geoid10`, [fProperties, analysisData])[0])
+			fEnrichedFeature.properties.grade = losScoreToGrade(parseInt(fEnrichedFeature.properties.la_gw_total_score))
+			intersectingPolygonInfos.push(fEnrichedFeature)
+		})
+		let intersectingPolygonsEnriched = turf.featureCollection(intersectingPolygonInfos)
+		map.getSource('nearby-census-blocks-source').setData(intersectingPolygonsEnriched)
 
 		// UPDATE SELECTED CENSUS BLOCK
 		map.getSource('cb-selected-source').setData(selectedCensusBlockFC)
@@ -198,9 +250,9 @@ Promise.all([
 		mapbox10MinuteWalkIsochrone(selectedCensusBlockPOSCoordinates, mapboxgl.accessToken)
 			.then((res) => {
 				map.getSource('isochrone-source').setData(res)
-				map.fitBounds(turf.bbox(res), {
-					padding: 10
-				})
+				// map.fitBounds(turf.bbox(res), {
+				// 	padding: 10
+				// })
 			})
 
 		// FIND CAC
@@ -252,6 +304,10 @@ Promise.all([
 		infoPaneEsriThematicMap('greenway-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Parks/Greenway/MapServer', [0,1,3], 0.4)
 		// Flood Plain
 		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'http://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
+
+
+
+
 	}
 })
 
@@ -259,6 +315,7 @@ Promise.all([
 
 
 function clickedFeatureInfo(selectedFeature, selectedFeatureId, joinTable, joinTableId) {
+
 	let selectedFeatureArray = [selectedFeature.features[0].properties]
 	return alasql(`SELECT * FROM ? selectedFeatureArray JOIN ? joinTable ON selectedFeatureArray.${selectedFeatureId} = joinTable.${joinTableId}`, [selectedFeatureArray, joinTable])
 
@@ -271,4 +328,13 @@ function losScoreToGrade(score) {
 				 score >  4  ? 'D' :
 				 score == 4  ? 'F' :
 											 '-';
+}
+
+function losScoreToColor(score) {
+	return score >  16 ? '#1a9641' :
+				 score >  12 ? '#a6d96a' :
+				 score >  8  ? '#ffffbf' :
+				 score >  4  ? '#fdae61' :
+				 score == 4  ? '#d7191c' :
+											 '#121212';
 }
