@@ -268,49 +268,60 @@ Promise.all([
 		// Remove initial info pane info if it's there
 		removeElementById('initial-info-pane-content')
 		// Update elements of the info pane
-		updateHandlebarElement('info-pane', template, {
-			censusBlockId: selectedCensusBlockInfo.geoid10,
-			los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
-			lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score)),
-			cac: () => {
-				if(!cac) {
-					return "-"
-				} else {
-					return cac.NAME
+		mapboxReverseGeocode(selectedCensusBlockPOSCoordinates, mapboxgl.accessToken)
+			.then((res) => {
+				let addressBasic = ''
+				if (res.features[0].address) {
+					addressBasic += `${res.features[0].address} `
 				}
-			},
-			subdivision: () => {
-				if (!subdivision) {
-					return "-"
-				} else {
-					return subdivision.NAME;
+				if (res.features[0].text) {
+					addressBasic += `${res.features[0].text}`
 				}
-			},
-			council: () => {
-				if (!council) {
-					return "-"
-				} else {
-					return `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
-				}
-			}
-		})
 
-		// ADD MAPS TO INFO PANE
-		// Zoning
-		infoPaneEsriThematicMap('zoning-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/Zoning/MapServer', [0], 0.4)
-		// Future Land Use
-		infoPaneEsriThematicMap('flu-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/FutureLandUse/MapServer', [0], 0.4)
-		// Greenway
-		infoPaneEsriThematicMap('greenway-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Parks/Greenway/MapServer', [0,1,3], 0.4)
-		// Flood Plain
-		infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'https://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4)
+				updateHandlebarElement('info-pane', template, {
+					censusBlockId: selectedCensusBlockInfo.geoid10,
+					censusBlockAddress: addressBasic,
+					los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
+					lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score)),
+					cac: () => {
+						if(!cac) {
+							return "-"
+						} else {
+							return cac.NAME
+						}
+					},
+					subdivision: () => {
+						if (!subdivision) {
+							return "-"
+						} else {
+							return subdivision.NAME;
+						}
+					},
+					council: () => {
+						if (!council) {
+							return "-"
+						} else {
+							return `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
+						}
+					}
+				})
 
-
-
-
+				// ADD MAPS TO INFO PANE
+				// Zoning
+				infoPaneEsriThematicMap('zoning-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/Zoning/MapServer', [0], 0.4, true, ['ZONING'])
+				// Future Land Use
+				infoPaneEsriThematicMap('flu-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Planning/FutureLandUse/MapServer', [0], 0.4, true, ['Land_Use'])
+				// Greenway
+				infoPaneEsriThematicMap('greenway-map', selectedCensusBlockFC, 'https://maps.raleighnc.gov/arcgis/rest/services/Parks/Greenway/MapServer', [0,1,3], 0.4, true, ['LOCATION', 'CORRIDOR'])
+				// Flood Plain
+				infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'https://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4, true, ['ZONE_IMAPS'])
+			})
 	}
 })
 
+function mapboxReverseGeocode(coordinates, token) {
+	return d3.json(`https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${token}`)
+}
 
 
 
