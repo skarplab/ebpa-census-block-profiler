@@ -20,6 +20,12 @@ body {
   overflow: auto
 }
 
+.chart-container {
+  position: relative;
+  height: 50%;
+  width: 100%;
+}
+
 .info-pane-map {
   width: 100%;
   height: 250px;
@@ -35,7 +41,7 @@ body {
     height: 50%;
   }
   #info-pane {
-    height: 50%;
+    height: 20%;
     width: 100%;
   }
   .info-pane-title {

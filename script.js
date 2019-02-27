@@ -213,9 +213,12 @@ Promise.all([
 	})
 	// TODO: Use URL hash to open map with a particular Census Block already selected
 	function updateApp(e) {
+
+
+
 		let selectedCensusBlockFC = turf.featureCollection([e.features[0]])
 		let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
-
+		console.log(selectedCensusBlockInfo)
 
 		// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK. This works but needs to be cleaned up. Some functions probably need to be refactored to make this work well.
 		let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1, {units: "miles"})
@@ -278,33 +281,65 @@ Promise.all([
 					addressBasic += `${res.features[0].text}`
 				}
 
-				updateHandlebarElement('info-pane', template, {
-					censusBlockId: selectedCensusBlockInfo.geoid10,
-					censusBlockAddress: addressBasic,
-					los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
-					lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score)),
-					cac: () => {
-						if(!cac) {
-							return "-"
-						} else {
-							return cac.NAME
+				try {
+					updateHandlebarElement('info-pane', template, {
+						censusBlockId: selectedCensusBlockInfo.geoid10,
+						censusBlockAddress: addressBasic,
+						los: losScoreToGrade(parseInt(selectedCensusBlockInfo.los_gw_total_score)),
+						lalos: losScoreToGrade(parseInt(selectedCensusBlockInfo.la_gw_total_score)),
+						cac: () => {
+							if(!cac) {
+								return "-"
+							} else {
+								return cac.NAME
+							}
+						},
+						subdivision: () => {
+							if (!subdivision) {
+								return "-"
+							} else {
+								return subdivision.NAME;
+							}
+						},
+						council: () => {
+							if (!council) {
+								return "-"
+							} else {
+								return `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
+							}
 						}
-					},
-					subdivision: () => {
-						if (!subdivision) {
-							return "-"
-						} else {
-							return subdivision.NAME;
-						}
-					},
-					council: () => {
-						if (!council) {
-							return "-"
-						} else {
-							return `District ${council.COUNCIL_DIST} - ${council.COUNCIL_PERSON}`
-						}
-					}
-				})
+					})
+				} catch (e) {
+					console.log(e)
+				} finally {
+					let chartLabels = ['Distance', 'Acre', 'Experience', 'Greenway']
+					let barColors = ["#9C27B0", "#FFC107", "#2196F3", "#4CAF50"]
+					ebpaScoreBarChart('los-chart',
+													  chartLabels,
+														[
+															selectedCensusBlockInfo.los_dist_score,
+															selectedCensusBlockInfo.los_acre_score,
+															selectedCensusBlockInfo.los_exp_score,
+															selectedCensusBlockInfo.gw_score_loop_contiguous
+														],
+														barColors,
+														'Individual Factor Scores'
+													)
+					ebpaScoreBarChart('la-chart',
+													  chartLabels,
+														[
+															selectedCensusBlockInfo.los_dist_score,
+															selectedCensusBlockInfo.los_acre_score,
+															selectedCensusBlockInfo.los_exp_score,
+															selectedCensusBlockInfo.gw_score_loop_contiguous
+														],
+														barColors,
+														'Individual Factor Scores'
+													)
+				}
+
+
+
 
 				// ADD MAPS TO INFO PANE
 				// Zoning
