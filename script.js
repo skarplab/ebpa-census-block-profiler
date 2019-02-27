@@ -328,9 +328,9 @@ Promise.all([
 					ebpaScoreBarChart('la-chart',
 													  chartLabels,
 														[
-															selectedCensusBlockInfo.los_dist_score,
-															selectedCensusBlockInfo.los_acre_score,
-															selectedCensusBlockInfo.los_exp_score,
+															selectedCensusBlockInfo.la_dist_score,
+															selectedCensusBlockInfo.la_acre_score,
+															selectedCensusBlockInfo.la_exp_score,
 															selectedCensusBlockInfo.gw_score_loop_contiguous
 														],
 														barColors,
