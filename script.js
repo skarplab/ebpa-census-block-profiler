@@ -8,7 +8,6 @@ const SUBDIVISIONS_URL = "./data/wake_subdivisions.geojson"
 const COUNCIL_DISTRICTS_URL = "./data/ral_council_districts.geojson"
 
 mapboxgl.accessToken = "pk.eyJ1IjoicHJjcmRldmxhYiIsImEiOiJjamljNWE0Z2owMGJjM2tzM3gxYmRrNXZnIn0.exFKTScPuDEIqeY-Rv36gQ"
-
 let map = new mapboxgl.Map({
 	container: 'map',
 	style: 'mapbox://styles/prcrdevlab/cjsfao9os15fc1fmuot5nthgs',
@@ -16,28 +15,30 @@ let map = new mapboxgl.Map({
 	zoom: 13
 });
 
-
-
 Promise.all([
-	d3.json(CENSUS_BLOCK_DATA_URL),
 	d3.csv(ANALYSIS_DATA_URL),
+	d3.json(CENSUS_BLOCK_DATA_URL),
 	d3.json(CAC_DATA_URL),
 	d3.json(SUBDIVISIONS_URL),
 	d3.json(COUNCIL_DISTRICTS_URL)
-]).then(([censusBlockData, analysisData, cacData, subdivisionsData, councilDistrictsData]) => {
+]).then(([analysisData, censusBlockData, cacData, subdivisionsData, councilDistrictsData]) => {
 
-	if (map.loaded()) {
+	map.once('data', () => {
 		///////////////////////////////////
 		// CENSUS BLOCKS W/ EBPA SCORES //
 		/////////////////////////////////
+		map.addSource("cb-source", {
+			"type": 'geojson',
+			"data": censusBlockData
+		})	
 		map.addLayer({
 			"id": "cb-fill-layer",
 			"type": "fill",
-			// "source": "cb-source",
-			"source": {
-				"type": 'geojson',
-				"data": censusBlockData
-			},
+			"source": "cb-source",
+			// "source": {
+			// 	"type": 'geojson',
+			// 	"data": censusBlockData
+			// },
 			"layout": {},
 			"paint": {
 				"fill-color": "#abc123",
@@ -211,8 +212,8 @@ Promise.all([
 			}
 		}, 'waterway-river-canal')
 
-	}
-
+	})
+	
 	map.on('click', 'cb-fill-layer', (e) => {
 		updateApp(e)
 	})
