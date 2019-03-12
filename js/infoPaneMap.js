@@ -1,7 +1,7 @@
 function infoPaneEsriThematicMap(mapElement, focusFeature, thematicLayerServiceUrl, thematicLayerLayers, thematicLayerOpacity, dragging=true, popup=false) {
 	let thematicMap = L.map(mapElement, {
 		zoomControl: false,
-		dragging: dragging,
+		dragging: false,
 		scrollWheelZoom: false,
 		doubleClickZoom: false,
 		keyboard: false,
