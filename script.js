@@ -44,7 +44,12 @@ Promise.all([
 				"fill-opacity": 0
 			}
 		});
-
+		map.on('mouseenter', 'cb-fill-layer', (e) => {
+			map.getCanvas().style.cursor = 'pointer'
+		})
+		map.on('mouseleave', 'cb-fill-layer', (e) => {
+			map.getCanvas().style.cursor = 'grab'
+		})
 		///////////
 		// CACs //
 		/////////
