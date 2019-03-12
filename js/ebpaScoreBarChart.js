@@ -11,11 +11,12 @@ function ebpaScoreBarChart(el, labels, data, barColors, titleText) {
 			}]
 		},
 		options: {
-      title: {
-        display: true,
-        text: titleText,
-        fontColor: "#ffffff"
-      },
+			maintainAspectRatio: false,
+			title: {
+				display: true,
+				text: titleText,
+				fontColor: "#ffffff"
+			},
 			labels: {
 				fontColor: "#ffffff"
 			},
