@@ -1,11 +1,11 @@
 let source = document.getElementById('info-pane-template').innerHTML;
 let template = Handlebars.compile(source);
 
-const CENSUS_BLOCK_DATA_URL = "./data/cb_2010.geojson"
+const CENSUS_BLOCK_PBF_URL = "./data/cb_2010.pbf"
 const ANALYSIS_DATA_URL = "./data/analysis_values.csv"
-const CAC_DATA_URL = "./data/ral_cacs.geojson"
-const SUBDIVISIONS_URL = "./data/wake_subdivisions.geojson"
-const COUNCIL_DISTRICTS_URL = "./data/ral_council_districts.geojson"
+const CAC_PBF_URL = "./data/ral_cacs.pbf"
+const SUBDIVISIONS_PBF_URL = "./data/wake_subdivisions.pbf"
+const COUNCIL_DISTRICTS_PBF_URL = "./data/ral_council_districts.pbf"
 
 mapboxgl.accessToken = "pk.eyJ1IjoicHJjcmRldmxhYiIsImEiOiJjamljNWE0Z2owMGJjM2tzM3gxYmRrNXZnIn0.exFKTScPuDEIqeY-Rv36gQ"
 let map = new mapboxgl.Map({
@@ -17,12 +17,15 @@ let map = new mapboxgl.Map({
 
 Promise.all([
 	d3.csv(ANALYSIS_DATA_URL),
-	d3.json(CENSUS_BLOCK_DATA_URL),
-	d3.json(CAC_DATA_URL),
-	d3.json(SUBDIVISIONS_URL),
-	d3.json(COUNCIL_DISTRICTS_URL)
-]).then(([analysisData, censusBlockData, cacData, subdivisionsData, councilDistrictsData]) => {
-
+	d3.buffer(CENSUS_BLOCK_PBF_URL),
+	d3.buffer(CAC_PBF_URL),
+	d3.buffer(SUBDIVISIONS_PBF_URL),
+	d3.buffer(COUNCIL_DISTRICTS_PBF_URL)
+]).then(([analysisData, censusBlockPbf, cacPbf, subdivisionsPbf, councilDistrictsPbf]) => {
+	let censusBlockData = geobuf.decode(new Pbf(censusBlockPbf))
+	let cacData = geobuf.decode(new Pbf(cacPbf))
+	let subdivisionsData = geobuf.decode(new Pbf(subdivisionsPbf))
+	let councilDistrictsData = geobuf.decode(new Pbf(councilDistrictsPbf))
 	map.once('data', () => {
 		///////////////////////////////////
 		// CENSUS BLOCKS W/ EBPA SCORES //
