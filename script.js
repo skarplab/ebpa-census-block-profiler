@@ -363,6 +363,12 @@ Promise.all([
 	}
 })
 
+extrudeButton = document.getElementById('extrude-button');
+extrudeButton.addEventListener('click', () => {
+	map.setPitch(60)
+})
+
+
 function mapboxReverseGeocode(coordinates, token) {
 	return d3.json(`https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${token}`)
 }
