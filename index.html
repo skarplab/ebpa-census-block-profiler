@@ -8,6 +8,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
     integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
     crossorigin=""/>
@@ -48,11 +49,15 @@
   </head>
   <body class="deep-purple darken-3">
     <nav class="deep-purple darken-4 z-depth-5">
-      <a href="#" class="brand-logo" id="navbar-title">EBPA Census Block Profiler (Alpha)</a>
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo" id="navbar-title">EBPA Census Block Profiler (Alpha)</a>
+      </div>
     </nav>
     <div class="row flex">
       <!-- Map Element -->
-      <div class="col s12 m5" id="map"></div>
+      <div class="col s12 m5" id="map">
+        <a class="btn-floating btn-small waves-effect waves-light blue-grey tooltipped hide" data-position="bottom" data-tooltip="Toggle 2D/3D" id="toggle-view-button"><i class="material-icons" id="toggle-view-button-icon">language</i></a>
+      </div>
       <!-- Sidebar -->
       <div class="col s12 m7 grey darken-3" id="info-pane">
         <div class="col s12 m12 l12" id="initial-info-pane-content">

@@ -9,10 +9,22 @@ body {
   height: calc(100vh - 68px);
 }
 
-#map {
-  height: 100%;,
+#map-container {
   margin: 0;
   padding: 0;
+}
+
+
+#map {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#toggle-view-button{
+  position: absolute;
+  top: 10px;
+  left: 10px;
 }
 
 #info-pane {

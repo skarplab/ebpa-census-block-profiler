@@ -16,7 +16,28 @@ let map = new mapboxgl.Map({
 });
 
 Promise.all([
-	d3.csv(ANALYSIS_DATA_URL),
+	d3.csv(ANALYSIS_DATA_URL, (d) => {
+		return {
+			area: +d.area,
+			geoid10: d.geoid10,
+			grade: d.grade,
+			gw_score_loop_contiguous: +d.gw_score_loop_contiguous,
+			la_acre_score: +d.la_acre_score,
+			la_dist_score: +d.la_dist_score,
+			la_exp_score: +d.la_exp_score,
+			la_gw_total_score: +d.la_gw_total_score,
+			la_total_score: +d.la_total_score,
+			los_acre_score: +d.los_acre_score,
+			los_dist_score: +d.los_dist_score,
+			los_exp_score: +d.los_exp_score,
+			los_gw_total_score: +d.los_gw_total_score,
+			los_total_score: +d.los_total_score,
+			popdensity_sqmi: +d.popdensity_sqmi,
+			tothh: +d.tothh,
+			totpop_2018: +d.totpop_2018,
+			select_extrusion: +d.popdensity_sqmi * 0.0276752767527675
+		}
+	}),
 	d3.buffer(CENSUS_BLOCK_PBF_URL),
 	d3.buffer(CAC_PBF_URL),
 	d3.buffer(SUBDIVISIONS_PBF_URL),
@@ -223,11 +244,12 @@ Promise.all([
 	// TODO: Use URL hash to open map with a particular Census Block already selected
 	function updateApp(e) {
 
-
+		removeClassFromElement(document.getElementById("toggle-view-button"), "hide")
 
 		let selectedCensusBlockFC = turf.featureCollection([e.features[0]])
 		let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
 		console.log(selectedCensusBlockInfo)
+		selectedCensusBlockFC.features[0].properties.select_extrusion = selectedCensusBlockInfo.select_extrusion
 
 		// TODO: BUFFER CENSUS BLOCK POLYGON AND GET INFORMATION ABOUT SURROUNDING CENSUS BLOCKS. NAMELY THIS WOULD BE USED TO FIND THE AVERAGE SCORE OF THE SURROUNDING CENSUS BLOCKS TO USE FOR COMPARISON TO THE SELECTED CENSUS BLOCK. This works but needs to be cleaned up. Some functions probably need to be refactored to make this work well.
 		let selectedCensusBlockBuffer = turf.buffer(selectedCensusBlockFC, 1, {units: "miles"})
@@ -248,6 +270,7 @@ Promise.all([
 			intersectingPolygonInfos.push(fEnrichedFeature)
 		})
 		let intersectingPolygonsEnriched = turf.featureCollection(intersectingPolygonInfos)
+		console.log(intersectingPolygonsEnriched)
 		map.getSource('nearby-census-blocks-source').setData(intersectingPolygonsEnriched)
 
 		// UPDATE SELECTED CENSUS BLOCK
@@ -361,6 +384,101 @@ Promise.all([
 				infoPaneEsriThematicMap('flood-map', selectedCensusBlockFC, 'https://maps.wakegov.com/arcgis/rest/services/Environmental/FloodData/MapServer', [0], 0.4, true, ['ZONE_IMAPS'])
 			})
 	}
+})
+
+function removeClassFromElement(element, className) {
+	try {
+		element.classList.remove(className)
+	} catch(error) {
+		console.log(error)
+	}
+}
+
+let extrusion = false;
+let toggleViewButton = document.getElementById('toggle-view-button');
+let toggleViewButtonIcon = document.getElementById('toggle-view-button-icon');
+
+document.addEventListener('DOMContentLoaded', () => {
+	M.Tooltip.init(toggleViewButton)
+})
+toggleViewButton.addEventListener('click', () => {
+	if (map.getLayer("nearby-census-blocks-fill-layer")){
+		map.removeLayer("nearby-census-blocks-fill-layer")
+	}
+	if (map.getLayer("cb-selected-line-layer")) {
+		map.removeLayer("cb-selected-line-layer")
+	}
+
+	if(!extrusion){
+		map.easeTo({'pitch': 45})
+		map.addLayer({
+			"id": "nearby-census-blocks-fill-layer",
+			"type": "fill-extrusion",
+			"source": "nearby-census-blocks-source",
+			"layout": {},
+			"paint": {
+				"fill-extrusion-color": [
+					'match',
+					['get', 'grade'],
+					'A', '#1a9641',
+					'B', '#a6d96a',
+					'C', '#ffffbf',
+					'D', '#fdae61',
+					'F', '#d7191c',
+					'#121212'
+				],
+				"fill-extrusion-opacity": 1,
+				"fill-extrusion-height": ['get', 'select_extrusion']
+			}
+		})
+
+		map.addLayer({
+			"id": "cb-selected-line-layer",
+			"type": "fill-extrusion",
+			"source": "cb-selected-source",
+			"layout": {},
+			"paint": {
+				"fill-extrusion-color": "#1eded2","fill-extrusion-height": ['get', 'select_extrusion'],
+				"fill-extrusion-base": 0
+			}
+		})
+
+		toggleViewButtonIcon.innerHTML = 'map';
+	} else if(extrusion) {
+		map.easeTo({ 'bearing':0, 'pitch': 0 })
+		map.addLayer({
+			"id": "nearby-census-blocks-fill-layer",
+			"type": "fill",
+			"source": "nearby-census-blocks-source",
+			"layout": {},
+			"paint": {
+				"fill-color": [
+					'match',
+					['get', 'grade'],
+					'A', '#1a9641',
+					'B', '#a6d96a',
+					'C', '#ffffbf',
+					'D', '#fdae61',
+					'F', '#d7191c',
+					'#121212'
+				],
+				"fill-opacity": 0.5
+			}
+		}, 'waterway-river-canal')
+
+		map.addLayer({
+			"id": "cb-selected-line-layer",
+			"type": "line",
+			"source": "cb-selected-source",
+			"layout": {},
+			"paint": {
+				"line-color": "#1eded2",
+				"line-width": 2
+			}
+		})
+		toggleViewButtonIcon.innerHTML = 'language';
+	}
+	extrusion = !extrusion
 })
 
 function mapboxReverseGeocode(coordinates, token) {
