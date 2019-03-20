@@ -244,7 +244,7 @@ Promise.all([
 	// TODO: Use URL hash to open map with a particular Census Block already selected
 	function updateApp(e) {
 
-
+		removeClassFromElement(document.getElementById("toggle-view-button"), "hide")
 
 		let selectedCensusBlockFC = turf.featureCollection([e.features[0]])
 		let selectedCensusBlockInfo = clickedFeatureInfo(e, 'geoid10', analysisData, 'geoid10')[0]
@@ -386,9 +386,22 @@ Promise.all([
 	}
 })
 
+function removeClassFromElement(element, className) {
+	try {
+		element.classList.remove(className)
+	} catch(error) {
+		console.log(error)
+	}
+}
+
 let extrusion = false;
-extrudeButton = document.getElementById('extrude-button');
-extrudeButton.addEventListener('click', () => {
+let toggleViewButton = document.getElementById('toggle-view-button');
+let toggleViewButtonIcon = document.getElementById('toggle-view-button-icon');
+
+document.addEventListener('DOMContentLoaded', () => {
+	M.Tooltip.init(toggleViewButton)
+})
+toggleViewButton.addEventListener('click', () => {
 	if (map.getLayer("nearby-census-blocks-fill-layer")){
 		map.removeLayer("nearby-census-blocks-fill-layer")
 	}
@@ -397,7 +410,6 @@ extrudeButton.addEventListener('click', () => {
 	}
 
 	if(!extrusion){
-		extrusion = true;
 		map.easeTo({'pitch': 45})
 		map.addLayer({
 			"id": "nearby-census-blocks-fill-layer",
@@ -431,8 +443,8 @@ extrudeButton.addEventListener('click', () => {
 			}
 		})
 
+		toggleViewButtonIcon.innerHTML = 'map';
 	} else if(extrusion) {
-		extrusion = false;
 		map.easeTo({ 'bearing':0, 'pitch': 0 })
 		map.addLayer({
 			"id": "nearby-census-blocks-fill-layer",
@@ -464,7 +476,9 @@ extrudeButton.addEventListener('click', () => {
 				"line-width": 2
 			}
 		})
+		toggleViewButtonIcon.innerHTML = 'language';
 	}
+	extrusion = !extrusion
 })
 
 function mapboxReverseGeocode(coordinates, token) {
