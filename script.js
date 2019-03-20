@@ -266,7 +266,7 @@ Promise.all([
 
 			let fEnrichedFeature = turf.feature(f.geometry,
 				alasql(`SELECT * FROM ? fProperties JOIN ? analysisData ON fProperties.geoid10 = analysisData.geoid10`, [fProperties, analysisData])[0])
-			fEnrichedFeature.properties.grade = losScoreToGrade(parseInt(fEnrichedFeature.properties.la_gw_total_score))
+			fEnrichedFeature.properties.grade = losScoreToGrade(parseInt(fEnrichedFeature.properties.los_gw_total_score))
 			intersectingPolygonInfos.push(fEnrichedFeature)
 		})
 		let intersectingPolygonsEnriched = turf.featureCollection(intersectingPolygonInfos)
